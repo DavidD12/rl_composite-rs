@@ -1,0 +1,30 @@
+[package]
+name = "rlc_model-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["David Doose <David.Doose@gmail.com>"]
+description = "'Robot Language' composition parser and rust model"
+license = "LGPL-3.0-only"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lalrpop-util = { version = "0.19.7", features = ["lexer"] }
+regex = "1"
+# pretty_env_logger = "0.4.0"
+line-col = "0.2.1"
+log = "0.4.0"
+env_logger = "0.8.4"
+clap = { version = "4.0.11", features = ["derive"] }
+rl_model-rs = "0.1.1"
+
+[build-dependencies]
+lalrpop = { version = "0.19.7", features = ["lexer"] }
+
+[lib]
+name = "rlc_model"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rlc_model"
+path = "bin/main.rs"

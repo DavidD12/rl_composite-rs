@@ -1,0 +1,55 @@
+// >> (seq) only continue on success, else stops
+// || (par) only continue once all success, else interrupts
+// race/race_failure continues on first success/failure, interrupts if one fails/succeeds
+// + (choice) only continue on first success, else stops if all fail
+
+include "examples/spot.rl"
+include "examples/manipulator.rl"
+
+def my_fun(x: X, y: Y)
+
+/*
+def spot_init_power(spot:spot) 
+    -> (success is_poweredon _ | failure couldnot_poweron)
+{
+    match spot.init_power() {
+        | success is_poweredon _
+            or precondition is_powered
+            or precondition is_sitting
+            => success is_poweredon _
+        | _ => failure couldnot_poweron
+    }
+}
+
+def spot_standup(spot:spot)
+    -> (success is_standing _ | failure couldnot_stand)
+{
+    match spot.standup() {
+        | success is_standing _
+            or precondition is_sitting
+            => success is_standing _
+        | _ => failure standup_failed
+    }
+}
+
+def spot_ready(spot:spot)
+{
+    spot_init_power(spot) >> spot_standup(spot)
+}
+
+def spot_follow_path(spot:spot,path:PoseArray)
+    -> (success reached pose | failure couldnot_reach)
+{
+    match spot.go_to_odom(path){
+        | success is_arrived pose => success reached pose
+        | _ => failure couldnot_reach
+    }
+}
+
+def simple_mission(spot:spot, path:PoseArray)
+{
+    spot_ready(spot)
+    >> spot_follow_path(path)
+    >> spot_rest(spot)
+}
+*/

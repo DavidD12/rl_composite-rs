@@ -1,0 +1,77 @@
+use crate::model::*;
+use crate::parser::*;
+use line_col::LineColLookup;
+
+grammar(lookup: &LineColLookup<'input>, parser: &mut Parser);
+
+match {
+    r"\s*" => { }, // The default whitespace skipping is disabled an `ignore pattern` is specified
+    r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`
+    r"/\*[^*]*\*+(?:[^/*][^*]*\*+)*/" => { },  // Skip `/* comments */`
+    _
+}
+
+//------------------------- Model -------------------------
+
+pub Model: () = Entry* => {};
+
+//------------------------- Entry -------------------------
+
+Entry: () = {
+    Include,
+    Function,
+};
+
+//------------------------- Inclue RL Model -------------------------
+
+Include: () = "include" <file:String> => {
+    parser.model.add_include(&file);
+    parser.rl_parser.add(file);
+};
+
+//------------------------- Function -------------------------
+
+Function: () = "def" <x:Identifier>  <p:Parameters> => {
+    let x = Function::new(x.name, p, Some(x.position));
+    parser.model.add_function(x);
+};
+
+//------------------------- Parameter -------------------------
+
+Parameter: Parameter = <i:Identifier> ":" <t:Type> => {
+    let position = Some(i.position.clone());
+    Parameter::new(i.name, t.clone(), position)
+};
+
+Parameters: Vec<Parameter> = {
+    "(" ")" => vec![],
+    "(" <p:Parameter> <l:ComaParameter*>")" => {
+        let mut v = vec![p];
+        v.extend(l);
+        v
+    }
+};
+
+ComaParameter: Parameter = "," <p:Parameter> => p;
+
+//------------------------- Type -------------------------
+
+Type: Type = <i:Identifier> => {
+    Type::Unresolved(i.name, Some(i.position.clone()))
+};
+
+
+//========================= Lexer =========================
+
+String: String = <s:r#"".+""#> => s[1..s.len()-1].to_string();
+
+Boolean: bool = {
+    "false" => false,
+    "true" => true,
+};
+
+Integer: i64 = <i:r"-?[0-9]+"> => i.parse::<i64>().unwrap();
+
+Identifier: Identifier = <l:@L> <s:r"[a-zA-Z][a-zA-Z_0-9]*"> <r:@R> => {
+    Identifier::new(parser.file(), lookup, s, l)
+};
