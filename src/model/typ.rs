@@ -9,6 +9,8 @@ pub enum Type {
     Undefined,
     Unresolved(String, Option<Position>),
     //
+    Boolean,
+    //
     Skillset(SkillsetId),
     Type(TypeId),
 }

@@ -67,6 +67,30 @@ pub enum Expression {
     FunctionCall(FunctionId, Vec<Expr>),
 }
 
+impl Expression {
+    pub fn get_type(&self) -> Type {
+        match self {
+            Expression::Unresolved(_) => todo!(),
+            Expression::UnresolvedFunctionCall(_, _) => todo!(),
+            Expression::Nary(_, _) => todo!(),
+            Expression::Composition(_, _) => todo!(),
+            Expression::IfThenElse(_, _, _, _) => todo!(),
+            Expression::FunctionCall(_, _) => todo!(),
+        }
+    }
+
+    pub fn check_type(&self) -> Result<(), RlcError> {
+        match self {
+            Expression::Unresolved(_) => todo!(),
+            Expression::UnresolvedFunctionCall(_, _) => todo!(),
+            Expression::Nary(_, _) => todo!(),
+            Expression::Composition(_, _) => todo!(),
+            Expression::IfThenElse(_, _, _, _) => todo!(),
+            Expression::FunctionCall(_, _) => todo!(),
+        }
+    }
+}
+
 impl ToLang for Expression {
     fn to_lang(&self, model: &Model) -> String {
         match self {

@@ -150,6 +150,10 @@ SequenceExpr: Expr = {
 // };
 
 TermExpr: Expr = {
+    <x:Identifier> "(" ")" => {
+        let expression = Expression::UnresolvedFunctionCall(x.name, vec![]);
+        Expr::new(expression, Some(x.position))
+    },
     <x:Identifier> => Expr::new_unresolved(x.name, Some(x.position)),
     "(" <Expr> ")",
 };

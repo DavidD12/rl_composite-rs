@@ -333,7 +333,9 @@ skillset spot {
                 effect control_mode -> Idle
             }
         }
-        progress{period 1 sec}
+        progress{
+            period 1 sec
+        }
         interrupt { 
             interrupting true
             effect {
