@@ -57,14 +57,10 @@ impl Model {
 
 impl std::fmt::Display for Model {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.rl_model)?;
-        writeln!(
-            f,
-            "\n//--------------------------------------------------\n"
-        )?;
         for x in self.includes.iter() {
             writeln!(f, "include \"{}\"", x)?;
         }
+        write!(f, "\n")?;
         for x in self.functions.iter() {
             writeln!(f, "{}", x.to_lang(self))?;
         }

@@ -26,6 +26,11 @@ fn main() {
     //
     if let Ok(model) = load_model(&args.file) {
         if args.verbose >= 3 {
+            println!("\n--------------------------------------------------\n");
+            println!("{}", model.rl_model);
+        }
+        if args.verbose >= 2 {
+            println!("\n--------------------------------------------------\n");
             println!("{}", model);
         }
     }
