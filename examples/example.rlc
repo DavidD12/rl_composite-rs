@@ -1,0 +1,20 @@
+include "examples/spot.rl"
+include "examples/manipulator.rl"
+
+// Test bool operators with priority
+def my_first_fun(x: X, y: Y) {
+    toto and titi or tata
+}
+
+// Test ITE
+def my_second_fun() {
+    if toto then titi
+    elif truc then tata
+    else tutu
+    end
+}
+
+// Test Composition
+def my_third_fun() {
+    a > b > c + d + e | f | g ! h ! i
+}

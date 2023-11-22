@@ -31,8 +31,8 @@ Include: () = "include" <file:String> => {
 
 //------------------------- Function -------------------------
 
-Function: () = "def" <x:Identifier>  <p:Parameters> => {
-    let x = Function::new(x.name, p, Some(x.position));
+Function: () = "def" <x:Identifier> <p:Parameters> "{" <e:Expr> "}"=> {
+    let x = Function::new(x.name, p, e, Some(x.position));
     parser.model.add_function(x);
 };
 
@@ -60,6 +60,99 @@ Type: Type = <i:Identifier> => {
     Type::Unresolved(i.name, Some(i.position.clone()))
 };
 
+
+//========================= Expr =========================
+
+Expr:Expr = OrExpr;
+
+OrExpr: Expr = {
+    <l:@L><e:AndExpr> <v: ("or" <AndExpr>)+> => {
+        let position = Some(Position::new(parser.file(), lookup, l));
+        let mut kids = vec![e];
+        kids.extend(v);
+        let expression = Expression::Nary(NaryOperator::Or, kids);
+        Expr::new(expression, position)
+    },
+    AndExpr,
+};
+
+AndExpr: Expr = {
+    <l:@L><e:IfThenElseExpr> <v: ("and" <IfThenElseExpr>)+> => {
+        let position = Some(Position::new(parser.file(), lookup, l));
+        let mut kids = vec![e];
+        kids.extend(v);
+        let expression = Expression::Nary(NaryOperator::And, kids);
+        Expr::new(expression, position)
+    },
+    IfThenElseExpr,
+};
+
+IfThenElseExpr: Expr = {
+    <l:@L>"if" <c:Expr> "then" <t:Expr> <v:ElifExpr*> "else" <e:Expr> "end" => {
+        let position = Some(Position::new(parser.file(), lookup, l));
+        let c = Box::new(c);
+        let t = Box::new(t);
+        let e = Box::new(e);
+        let expression = Expression::IfThenElse(c, t, v, e);
+        Expr::new(expression, position)
+    },
+    RaceExpr,
+};
+ElifExpr: (Expr, Expr) = "elif" <x:Expr> "then" <y:Expr> => (x, y);
+
+RaceExpr: Expr = {
+    <l:@L><e:ParallelExpr> <v: ("!" <ParallelExpr>)+> => {
+        let position = Some(Position::new(parser.file(), lookup, l));
+        let mut kids = vec![e];
+        kids.extend(v);
+        let expression = Expression::Composition(CompositionOperator::Race, kids);
+        Expr::new(expression, position)
+    },
+    ParallelExpr,
+};
+
+ParallelExpr: Expr = {
+    <l:@L><e:ChoiceExpr> <v: ("|" <ChoiceExpr>)+> => {
+        let position = Some(Position::new(parser.file(), lookup, l));
+        let mut kids = vec![e];
+        kids.extend(v);
+        let expression = Expression::Composition(CompositionOperator::Parallel, kids);
+        Expr::new(expression, position)
+    },
+    ChoiceExpr,
+};
+
+ChoiceExpr: Expr = {
+    <l:@L><e:SequenceExpr> <v: ("+" <SequenceExpr>)+> => {
+        let position = Some(Position::new(parser.file(), lookup, l));
+        let mut kids = vec![e];
+        kids.extend(v);
+        let expression = Expression::Composition(CompositionOperator::Choice, kids);
+        Expr::new(expression, position)
+    },
+    SequenceExpr,
+};
+
+SequenceExpr: Expr = {
+    <l:@L><e:TermExpr> <v: (">" <TermExpr>)+> => {
+        let position = Some(Position::new(parser.file(), lookup, l));
+        let mut kids = vec![e];
+        kids.extend(v);
+        let expression = Expression::Composition(CompositionOperator::Sequence, kids);
+        Expr::new(expression, position)
+    },
+    TermExpr,
+};
+
+
+// PrefixExpr: Expr = {
+
+// };
+
+TermExpr: Expr = {
+    <x:Identifier> => Expr::new_unresolved(x.name, Some(x.position)),
+    "(" <Expr> ")",
+};
 
 //========================= Lexer =========================
 

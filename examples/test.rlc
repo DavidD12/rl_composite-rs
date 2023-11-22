@@ -6,7 +6,9 @@
 include "examples/spot.rl"
 include "examples/manipulator.rl"
 
-def my_fun(x: X, y: Y)
+def my_fun(x: X, y: Y) {
+    toto and titi or tata
+}
 
 /*
 def spot_init_power(spot:spot) 

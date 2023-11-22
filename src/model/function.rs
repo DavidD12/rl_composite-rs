@@ -20,6 +20,7 @@ pub struct Function {
     id: FunctionId,
     name: String,
     parameters: Vec<Parameter>,
+    expr: Expr,
     position: Option<Position>,
 }
 
@@ -27,14 +28,28 @@ impl Function {
     pub fn new<S: Into<String>>(
         name: S,
         parameters: Vec<Parameter>,
+        expr: Expr,
         position: Option<Position>,
     ) -> Self {
         Self {
             id: Default::default(),
             name: name.into(),
             parameters,
+            expr,
             position,
         }
+    }
+
+    pub fn parameters(&self) -> &Vec<Parameter> {
+        &self.parameters
+    }
+
+    pub fn expr(&self) -> &Expr {
+        &self.expr
+    }
+
+    pub fn set_expr(&mut self, expr: Expr) {
+        self.expr = expr
     }
 }
 
@@ -71,6 +86,8 @@ impl ToLang for Function {
                 s += &format!(", {}", x.to_lang(model))
             }
         }
-        s + ")"
+        s += ") {\n";
+        s += &format!("  {}\n", self.expr.to_lang(model));
+        s + "}\n"
     }
 }

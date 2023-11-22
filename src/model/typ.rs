@@ -18,6 +18,7 @@ impl ToLang for Type {
         match self {
             Type::Unresolved(name, _) => format!("{}?", name),
             Type::Undefined => "undef".into(),
+            //
             Type::Skillset(id) => {
                 let x = model.rl_model.get_skillset(*id).unwrap();
                 x.name().into()
