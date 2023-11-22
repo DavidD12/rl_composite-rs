@@ -335,6 +335,7 @@ skillset spot {
         }
         progress{
             period 1 sec
+            message ping: Float
         }
         interrupt { 
             interrupting true
