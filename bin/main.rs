@@ -2,7 +2,6 @@ use clap::Parser;
 use rlc_model::*;
 use std::env;
 
-/// Simple program to greet a person
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
