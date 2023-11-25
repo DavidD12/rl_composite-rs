@@ -1,5 +1,6 @@
 type {
     Pose2D
+    Pose
     PoseArray
     Float
     GeoPoint
