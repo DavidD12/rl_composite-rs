@@ -29,6 +29,7 @@ impl ToLang for Type {
                 let x = model.rl_model.get_type(*id).unwrap();
                 x.name().into()
             }
+            Type::Boolean => todo!(),
         }
     }
 }

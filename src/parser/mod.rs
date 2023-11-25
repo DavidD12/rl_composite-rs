@@ -9,6 +9,8 @@ pub use position::*;
 
 use crate::model::*;
 
+use rl_model::model::RlType;
+
 use line_col::LineColLookup;
 
 #[derive(Debug)]

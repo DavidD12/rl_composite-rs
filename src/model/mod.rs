@@ -4,6 +4,9 @@ pub use model::*;
 pub mod function;
 pub use function::*;
 
+pub mod decl_method;
+pub use decl_method::*;
+
 pub mod parameter;
 pub use parameter::*;
 

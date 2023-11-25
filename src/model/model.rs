@@ -1,12 +1,15 @@
 use crate::parser::error::*;
 use rl_model::model::Model as RlModel;
+use rl_model::model::RlType;
 
 use super::*;
 
 pub struct Model {
     pub rl_model: RlModel,
     includes: Vec<String>,
+    types: Vec<RlType>,
     functions: Vec<Function>,
+    declared_methods: Vec<DeclMethod>,
 }
 
 impl Default for Model {
@@ -14,7 +17,9 @@ impl Default for Model {
         Self {
             rl_model: RlModel::default(),
             includes: vec![],
+            types: vec![],
             functions: vec![],
+            declared_methods: vec![],
         }
     }
 }
@@ -27,6 +32,15 @@ impl Model {
 
     pub fn includes(&self) -> &Vec<String> {
         &self.includes
+    }
+
+    // ----- Types -----
+    pub fn add_type(&mut self, mut rl_type: RlType) {
+        self.types.push(rl_type);
+    }
+
+    pub fn types(&self) -> &Vec<RlType> {
+        &self.types
     }
 
     // ----- Function -----
@@ -42,10 +56,45 @@ impl Model {
         self.functions.get(id.index())
     }
 
+    // ----- Declared Methods -----
+
+    pub fn add_declared_method(&mut self, mut decl: DeclMethod) -> DeclMethodId {
+        let id = DeclMethodId(self.declared_methods.len());
+        decl.set_id(id);
+        self.declared_methods.push(decl);
+        id
+    }
+
+    pub fn get_declared_method(&self, id: DeclMethodId) -> Option<&DeclMethod> {
+        self.declared_methods.get(id.index())
+    }
+
     // ---------- ----------
     pub fn duplicate(&self) -> Result<(), RlcError> {
-        // TODO: check duplicate RLC and with RL model
-        //
+        // Includes
+        for (i, s1) in self.includes.iter().enumerate() {
+            for s2 in self.includes.iter().skip(i + 1) {
+                if s1 == s2 {
+                    return Err(RlcError::DuplInclude { name: s1.clone() });
+                }
+            }
+        }
+        // Types
+
+        // Functions
+        for (i, fn1) in self.functions.iter().enumerate() {
+            for fn2 in self.functions.iter().skip(i + 1) {
+                if fn1.name() == fn2.name() {
+                    return Err(RlcError::Duplicate {
+                        name: (fn1.name().to_string().clone()),
+                        first: (fn1.position().clone()),
+                        second: (fn2.position().clone()),
+                    });
+                }
+            }
+        }
+        // Declared Methods
+
         Ok(())
     }
 

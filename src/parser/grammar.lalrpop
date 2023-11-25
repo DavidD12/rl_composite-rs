@@ -19,14 +19,31 @@ pub Model: () = Entry* => {};
 
 Entry: () = {
     Include,
+    TypeSingle,
+    TypeBlock,
     Function,
+    DeclMethod,
 };
 
-//------------------------- Inclue RL Model -------------------------
+//------------------------- Include RL Model -------------------------
 
 Include: () = "include" <file:String> => {
     parser.model.add_include(&file);
     parser.rl_parser.add(file);
+};
+
+//------------------------- Type Definition -------------------------
+
+TypeSingle: () = "type" <x:Identifier> => {
+    let x = RlType::new(x.name, Some(x.position));
+    parser.model.add_type(x);
+};
+
+TypeBlock: () = "type" "{" <l:(<Identifier>)*> "}" => {
+    for x in l {
+        let x = RlType::new(x.name, Some(x.position));
+        parser.model.add_type(x);
+    }
 };
 
 //------------------------- Function -------------------------
@@ -34,6 +51,13 @@ Include: () = "include" <file:String> => {
 Function: () = "def" <x:Identifier> <p:Parameters> "{" <e:Expr> "}"=> {
     let x = Function::new(x.name, p, e, Some(x.position));
     parser.model.add_function(x);
+};
+
+//------------------------- Declared Methods -------------------------
+
+DeclMethod: () = "decl" <x:Identifier> <p:Parameters> => {
+    let x = DeclMethod::new(x.name, p, Some(x.position));
+    parser.model.add_declared_method(x);
 };
 
 //------------------------- Parameter -------------------------
