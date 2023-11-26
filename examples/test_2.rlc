@@ -1,0 +1,13 @@
+
+include {
+    "examples/spot.rl"
+    //"examples/manipulator.rl"
+}
+robot cool_robot:spot
+type NewCoolType
+
+def seq(spot:spot) {
+    spot > spot
+}
+
+decl cool_method(spot:spot,data:GeoPoint)

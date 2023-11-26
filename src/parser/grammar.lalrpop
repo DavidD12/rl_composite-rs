@@ -18,7 +18,10 @@ pub Model: () = Entry* => {};
 //------------------------- Entry -------------------------
 
 Entry: () = {
-    Include,
+    IncludeSingle,
+    IncludeBlock,
+    RobotSingle,
+    RobotBlock,
     TypeSingle,
     TypeBlock,
     Function,
@@ -27,21 +30,47 @@ Entry: () = {
 
 //------------------------- Include RL Model -------------------------
 
-Include: () = "include" <file:String> => {
+IncludeSingle: () = "include" <file:String> => {
     parser.model.add_include(&file);
     parser.rl_parser.add(file);
+};
+
+IncludeBlock: () = "include" "{" <l:(<String>)*> "}" => {
+    for file in l {
+        parser.model.add_include(&file);
+        parser.rl_parser.add(file);
+    }
+};
+
+//------------------------- Type -------------------------
+
+Type: Type = <i:Identifier> => {
+    Type::Unresolved(i.name, Some(i.position.clone()))
+};
+
+//------------------------- Robot Definition -------------------------
+
+RobotDef: Robot = <x:Identifier> ":" <t:Type> => {
+    Robot::new(x.name, t, Some(x.position))
+};
+
+RobotSingle: () = "robot" <r:RobotDef> => parser.model.add_robot(r);
+RobotBlock: () = "robot" "{" <l:RobotDef*> "}" => {
+    for r in l {
+        parser.model.add_robot(r);
+    };
 };
 
 //------------------------- Type Definition -------------------------
 
 TypeSingle: () = "type" <x:Identifier> => {
-    let x = RlType::new(x.name, Some(x.position));
+    let x = RlcType::new(x.name, Some(x.position));
     parser.model.add_type(x);
 };
 
 TypeBlock: () = "type" "{" <l:(<Identifier>)*> "}" => {
     for x in l {
-        let x = RlType::new(x.name, Some(x.position));
+        let x = RlcType::new(x.name, Some(x.position));
         parser.model.add_type(x);
     }
 };
@@ -77,12 +106,6 @@ Parameters: Vec<Parameter> = {
 };
 
 ComaParameter: Parameter = "," <p:Parameter> => p;
-
-//------------------------- Type -------------------------
-
-Type: Type = <i:Identifier> => {
-    Type::Unresolved(i.name, Some(i.position.clone()))
-};
 
 
 //========================= Expr =========================

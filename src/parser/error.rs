@@ -24,6 +24,9 @@ pub enum RlcError {
     DuplInclude {
         name: String,
     },
+    DuplType {
+        name: String,
+    },
     Resolve {
         element: String,
         position: Option<Position>,
@@ -105,6 +108,11 @@ impl std::fmt::Display for RlcError {
                 (Some(p1), Some(p2)) => write!(f, "duplicate '{}' at {} and {}", name, p1, p2),
             },
             RlcError::DuplInclude { name } => write!(f, "duplicate include '{}'", name),
+            RlcError::DuplType { name } => write!(
+                f,
+                "type '{}' conflicts with same type found in includes",
+                name
+            ),
         }
     }
 }

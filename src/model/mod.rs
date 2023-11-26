@@ -1,6 +1,9 @@
 pub mod model;
 pub use model::*;
 
+pub mod robot;
+pub use robot::*;
+
 pub mod function;
 pub use function::*;
 
@@ -9,6 +12,9 @@ pub use decl_method::*;
 
 pub mod parameter;
 pub use parameter::*;
+
+pub mod rlc_type;
+pub use rlc_type::*;
 
 pub mod typ;
 pub use typ::*;
