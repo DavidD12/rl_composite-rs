@@ -1,4 +1,5 @@
 use super::*;
+use rl_model::model::Skillset;
 
 #[derive(Debug, Clone)]
 pub struct Robot {
@@ -20,9 +21,12 @@ impl Robot {
         &self.name
     }
 
-    pub fn skillset(&self) -> &Type {
+    pub fn skillset_type(&self) -> &Type {
         &self.skillset_type
     }
+    // pub fn set_skillset_type(&self, s: &Skillset) -> () {
+    // self.skillset_type = Type::Skillset(s);
+    // }
 
     pub fn position(&self) -> Option<Position> {
         self.position.clone()

@@ -1,5 +1,8 @@
 use crate::parser::error::*;
 use rl_model::model::Model as RlModel;
+use rl_model::model::Skillset;
+use rl_model::model::SkillsetId;
+use std::collections::HashMap;
 
 use super::*;
 
@@ -35,9 +38,16 @@ impl Model {
         &self.includes
     }
 
+    // pub fn skillset_map(&self) -> HashMap<String, SkillsetId> {
+    //     let mut map = HashMap::new();
+    //     for (i, x) in self.rl_model.skillsets().iter().enumerate() {
+    //         map.insert(x.to_string(), x.id());
+    //     }
+    //     map
+    // }
+
     // ----- Robots -----
     pub fn add_robot(&mut self, r: Robot) {
-        print!("{}", r.name());
         self.robots.push(r);
     }
 
@@ -156,7 +166,39 @@ impl Model {
     }
 
     pub fn resolve(&mut self) -> Result<(), RlcError> {
-        // TODO
+        // let map: HashMap<String, Skillset> = self.skillset_map();
+        // for s in self.rl_model.skillsets().iter() {
+        //     print!("{}", s.id());
+        // }
+
+        // Robots
+        // for r in self.robots.iter() {
+        //     for s in self.rl_model.skillsets().iter() {
+        //         print!("{}", r.skillset());
+        //         if r.skillset() == s.to_string() {
+        //             print!("it's a match!")
+        //         }
+        //     }
+        // }
+        // for r in self.robots.iter_mut() {
+        //     match r.skillset_type() {
+        //         Type::Unresolved(name, pose) => match map.get(name) {
+        //             Some(s) => {
+        //                 r.set_skillset_type(*s);
+        //                 Ok(())
+        //             }
+        //             None => Err(RlError::Resolve {
+        //                 element: format!("type '{}'", name),
+        //                 position: pos.clone(),
+        //             }),
+        //         },
+        //         Type::Undefined => todo!(),
+        //         Type::Boolean => todo!(),
+        //         Type::Skillset(_) => todo!(),
+        //         Type::Type(_) => todo!(),
+        //     }
+        // }
+
         Ok(())
     }
 }
