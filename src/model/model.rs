@@ -1,8 +1,6 @@
 use crate::parser::error::*;
 use rl_model::model::Model as RlModel;
-use rl_model::model::Skillset;
-use rl_model::model::SkillsetId;
-use std::collections::HashMap;
+use rl_model::model::Named as RlNamed;
 
 use super::*;
 
@@ -166,39 +164,34 @@ impl Model {
     }
 
     pub fn resolve(&mut self) -> Result<(), RlcError> {
-        // let map: HashMap<String, Skillset> = self.skillset_map();
-        // for s in self.rl_model.skillsets().iter() {
-        //     print!("{}", s.id());
-        // }
-
         // Robots
-        // for r in self.robots.iter() {
-        //     for s in self.rl_model.skillsets().iter() {
-        //         print!("{}", r.skillset());
-        //         if r.skillset() == s.to_string() {
-        //             print!("it's a match!")
-        //         }
-        //     }
-        // }
-        // for r in self.robots.iter_mut() {
-        //     match r.skillset_type() {
-        //         Type::Unresolved(name, pose) => match map.get(name) {
-        //             Some(s) => {
-        //                 r.set_skillset_type(*s);
-        //                 Ok(())
-        //             }
-        //             None => Err(RlError::Resolve {
-        //                 element: format!("type '{}'", name),
-        //                 position: pos.clone(),
-        //             }),
-        //         },
-        //         Type::Undefined => todo!(),
-        //         Type::Boolean => todo!(),
-        //         Type::Skillset(_) => todo!(),
-        //         Type::Type(_) => todo!(),
-        //     }
-        // }
+        self.resolve_robots()?;
 
+        Ok(())
+    }
+
+    fn resolve_robots(&mut self) -> Result<(), RlcError> {
+        for r in self.robots.iter_mut() {
+            for s in self.rl_model.skillsets().iter() {
+                match r.skillset_type() {
+                    Type::Unresolved(name, _pos) => {
+                        if *name == s.to_string() {
+                            r.set_skillset_type(RlNamed::id(s));
+                        }
+                    }
+                    _ => (),
+                }
+            }
+            match r.skillset_type() {
+                Type::Unresolved(name, pos) => {
+                    return Err(RlcError::Resolve {
+                        element: format!("type '{}'", name),
+                        position: pos.clone(),
+                    })
+                }
+                _ => (),
+            };
+        }
         Ok(())
     }
 }
