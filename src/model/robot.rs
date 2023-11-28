@@ -1,16 +1,33 @@
 use super::*;
 use rl_model::model::SkillsetId;
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+pub struct RobotId(pub usize);
+
+impl Default for RobotId {
+    fn default() -> Self {
+        Self(0)
+    }
+}
+
+impl Id for RobotId {
+    fn index(&self) -> usize {
+        self.0
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Robot {
+    id: RobotId,
     name: String,
-    skillset_type: Type,
+    skillset: SkillsetId,
     position: Option<Position>,
 }
 
 impl Robot {
     pub fn new<S: Into<String>>(name: S, skillset_type: Type, position: Option<Position>) -> Self {
         Self {
+            id: RobotId::default(),
             name: name.into(),
             skillset_type,
             position,
@@ -29,6 +46,24 @@ impl Robot {
     }
 
     pub fn position(&self) -> Option<Position> {
+        self.position.clone()
+    }
+}
+
+impl Named<RobotId> for Robot {
+    fn id(&self) -> RobotId {
+        self.id
+    }
+
+    fn set_id(&mut self, id: RobotId) {
+        self.id = id
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn position(&self) -> Option<Position> {
         self.position.clone()
     }
 }

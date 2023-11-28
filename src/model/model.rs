@@ -45,8 +45,11 @@ impl Model {
     // }
 
     // ----- Robots -----
-    pub fn add_robot(&mut self, r: Robot) {
-        self.robots.push(r);
+    pub fn add_robot(&mut self, mut robot: Robot) -> RobotId {
+        let id = RobotId(self.robots.len());
+        robot.set_id(id);
+        self.robots.push(robot);
+        id
     }
 
     pub fn robots(&self) -> &Vec<Robot> {
