@@ -1,3 +1,5 @@
+use rl_model::model::{skill, SkillId, SkillsetId};
+
 use super::*;
 
 //-------------------------------------------------- Nary Operator --------------------------------------------------
@@ -56,6 +58,7 @@ impl std::fmt::Display for CompositionOperator {
 pub enum Expression {
     Unresolved(String),
     UnresolvedFunctionCall(String, Vec<Expr>),
+    UnresolvedSkillCall(String, String, Vec<Expr>),
     //
     Nary(NaryOperator, Vec<Expr>),
     //
@@ -65,6 +68,7 @@ pub enum Expression {
     //
     // RobotRef(RobotId, SkillsetId),
     FunctionCall(FunctionId, Vec<Expr>),
+    SkillCall(SkillsetId, SkillId, Vec<Expr>),
 }
 
 impl Expression {
@@ -76,6 +80,8 @@ impl Expression {
             Expression::Composition(_, _) => todo!(),
             Expression::IfThenElse(_, _, _, _) => todo!(),
             Expression::FunctionCall(_, _) => todo!(),
+            Expression::UnresolvedSkillCall(_, _, _) => todo!(),
+            Expression::SkillCall(_, _, _) => todo!(),
         }
     }
 
@@ -87,6 +93,8 @@ impl Expression {
             Expression::Composition(_, _) => todo!(),
             Expression::IfThenElse(_, _, _, _) => todo!(),
             Expression::FunctionCall(_, _) => todo!(),
+            Expression::UnresolvedSkillCall(_, _, _) => todo!(),
+            Expression::SkillCall(_, _, _) => todo!(),
         }
     }
 }
@@ -147,7 +155,42 @@ impl ToLang for Expression {
                 s.push_str(&format!(" else {} end", e.to_lang(model)));
                 s
             }
-            Expression::FunctionCall(_, _) => todo!(),
+            Expression::FunctionCall(id, params) => {
+                let func = model.get_function(id.clone()).expect("ERROR");
+                let mut s = format!("{}(", func.name());
+                if let Some((first, others)) = params.split_first() {
+                    s += &first.to_lang(model);
+                    for x in others.iter() {
+                        s += &format!(", {}", x.to_lang(model));
+                    }
+                }
+                s + ")"
+            }
+            Expression::UnresolvedSkillCall(skillset, skill, params) => {
+                let mut s = format!("{}.{}?(", skillset, skill);
+                if let Some((first, others)) = params.split_first() {
+                    s += &first.to_lang(model);
+                    for x in others.iter() {
+                        s += &format!(", {}", x.to_lang(model));
+                    }
+                }
+                s + ")"
+            }
+            Expression::SkillCall(skillset_id, skill_id, params) => {
+                let skillset = model
+                    .rl_model
+                    .get_skillset(skillset_id.clone())
+                    .expect("ERROR");
+                let skill = skillset.get_skill(skill_id.clone()).expect("ERROR");
+                let mut s = format!("{}.{}(", skillset.to_string(), skill.to_string());
+                if let Some((first, others)) = params.split_first() {
+                    s += &first.to_lang(model);
+                    for x in others.iter() {
+                        s += &format!(", {}", x.to_lang(model));
+                    }
+                }
+                s + ")"
+            }
         }
     }
 }

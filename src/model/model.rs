@@ -3,7 +3,7 @@ use rl_model::model::Model as RlModel;
 use rl_model::model::Named as RlNamed;
 
 use super::*;
-
+#[derive(Debug, Clone)]
 pub struct Model {
     pub rl_model: RlModel,
     includes: Vec<String>,
@@ -57,12 +57,22 @@ impl Model {
     }
 
     // ----- Types -----
-    pub fn add_type(&mut self, rlc_type: RlcType) {
+    pub fn add_type(&mut self, mut rlc_type: RlcType) {
+        let id = RlcTypeId(self.types.len());
+        rlc_type.set_id(id);
         self.types.push(rlc_type);
     }
 
     pub fn types(&self) -> &Vec<RlcType> {
         &self.types
+    }
+
+    pub fn get_types(&self) -> Vec<RlcType> {
+        self.types.clone()
+    }
+
+    pub fn get_type(&self, id: RlcTypeId) -> Option<&RlcType> {
+        self.types.get(id.index())
     }
 
     // ----- Function -----
@@ -76,6 +86,10 @@ impl Model {
 
     pub fn get_function(&self, id: FunctionId) -> Option<&Function> {
         self.functions.get(id.index())
+    }
+
+    pub fn functions(&self) -> &Vec<Function> {
+        &self.functions
     }
 
     // ----- Declared Methods -----
@@ -166,35 +180,85 @@ impl Model {
         Ok(())
     }
 
-    pub fn resolve(&mut self) -> Result<(), RlcError> {
-        // Robots
-        self.resolve_robots()?;
-
-        Ok(())
-    }
-
-    fn resolve_robots(&mut self) -> Result<(), RlcError> {
-        for r in self.robots.iter_mut() {
-            for s in self.rl_model.skillsets().iter() {
-                match r.skillset_type() {
+    pub fn resolve_parameters(&mut self) -> Result<(), RlcError> {
+        // resolve function content
+        let rlc_types = self.get_types();
+        for func in self.functions.iter_mut() {
+            // parameters
+            for param in func.parameters_mut().iter_mut() {
+                match param.typ().clone() {
                     Type::Unresolved(name, _pos) => {
-                        if *name == s.to_string() {
-                            r.set_skillset_type(RlNamed::id(s));
+                        for s in self.rl_model.skillsets().iter() {
+                            if s.to_string() == name.clone() {
+                                param.set_type(Type::Skillset(RlNamed::id(s)));
+                            }
+                        }
+                        for rl_t in self.rl_model.types().iter() {
+                            if rl_t.name() == name.clone() {
+                                param.set_type(Type::Type(rl_t.id()));
+                            }
+                        }
+                        for rlc_t in rlc_types.iter() {
+                            if rlc_t.name() == name.clone() {
+                                param.set_type(Type::RlcType(rlc_t.id()));
+                            }
                         }
                     }
                     _ => (),
                 }
+                match param.typ() {
+                    Type::Unresolved(name, pos) => {
+                        return Err(RlcError::Resolve {
+                            element: format!("type '{}'", name),
+                            position: pos.clone(),
+                        })
+                    }
+                    _ => (),
+                };
             }
-            match r.skillset_type() {
-                Type::Unresolved(name, pos) => {
-                    return Err(RlcError::Resolve {
-                        element: format!("type '{}'", name),
-                        position: pos.clone(),
-                    })
-                }
-                _ => (),
-            };
         }
+        Ok(())
+    }
+
+    pub fn resolve_expr(&mut self) -> Result<(), RlcError> {
+        let model = self.clone();
+        for func in self.functions.iter_mut() {
+            print!("Func:{}\n", func.name());
+            func.resolve_expr(&model)?;
+        }
+        Ok(())
+    }
+
+    pub fn resolve(&mut self) -> Result<(), RlcError> {
+        print!("Params\n");
+        self.resolve_parameters()?;
+        print!("Functions\n");
+        self.resolve_expr()?;
+        Ok(())
+    }
+
+    fn resolve_robots(&mut self) -> Result<(), RlcError> {
+        // for r in self.robots.iter_mut() {
+        //     for s in self.rl_model.skillsets().iter() {
+        //         match r.skillset() {
+        //             (name, _pos) => {
+        //                 if *name == s.to_string() {
+        //                     r.set_skillset_type(RlNamed::id(s));
+        //                 }
+        //             }
+        //             _ => (),
+        //         }
+        //     }
+        //     match r.skillset_type() {
+        //         Type::Unresolved(name, pos) => {
+        //             return Err(RlcError::Resolve {
+        //                 element: format!("type '{}'", name),
+        //                 position: pos.clone(),
+        //             })
+        //         }
+        //         _ => (),
+        //     };
+        // }
         Ok(())
     }
 }

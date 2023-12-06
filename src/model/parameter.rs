@@ -24,6 +24,14 @@ impl Parameter {
         &self.name
     }
 
+    pub fn typ(&self) -> &Type {
+        &self.typ
+    }
+
+    pub fn set_type(&mut self, new_typ: Type) {
+        self.typ = new_typ;
+    }
+
     pub fn is_same(&self, other: &Parameter) -> bool {
         self.name == other.name && self.typ == other.typ
     }

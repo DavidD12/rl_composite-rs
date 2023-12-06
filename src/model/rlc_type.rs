@@ -28,6 +28,14 @@ impl RlcType {
         let name = name.into();
         Self { id, name, position }
     }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn id(&self) -> RlcTypeId {
+        self.id
+    }
 }
 
 impl Named<RlcTypeId> for RlcType {

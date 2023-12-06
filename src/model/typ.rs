@@ -13,6 +13,7 @@ pub enum Type {
     //
     Skillset(SkillsetId),
     Type(TypeId),
+    RlcType(RlcTypeId),
 }
 
 impl ToLang for Type {
@@ -27,6 +28,10 @@ impl ToLang for Type {
             }
             Type::Type(id) => {
                 let x = model.rl_model.get_type(*id).unwrap();
+                x.name().into()
+            }
+            Type::RlcType(id) => {
+                let x = model.get_type(*id).unwrap();
                 x.name().into()
             }
             Type::Boolean => todo!(),

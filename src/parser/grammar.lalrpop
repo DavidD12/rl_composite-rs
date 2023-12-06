@@ -20,8 +20,8 @@ pub Model: () = Entry* => {};
 Entry: () = {
     IncludeSingle,
     IncludeBlock,
-    RobotSingle,
-    RobotBlock,
+    //RobotSingle,
+    //RobotBlock,
     TypeSingle,
     TypeBlock,
     Function,
@@ -50,16 +50,16 @@ Type: Type = <i:Identifier> => {
 
 //------------------------- Robot Definition -------------------------
 
-RobotDef: Robot = <x:Identifier> ":" <t:Type> => {
-    Robot::new(x.name, t, Some(x.position))
-};
-
-RobotSingle: () = "robot" <r:RobotDef> => parser.model.add_robot(r);
-RobotBlock: () = "robot" "{" <l:RobotDef*> "}" => {
-    for r in l {
-        parser.model.add_robot(r);
-    };
-};
+//RobotDef: Robot = <x:Identifier> ":" <s:Identifier> => {
+//    Robot::new(x.name, s, Some(x.position))
+//};
+//
+//RobotSingle: () = "robot" <r:RobotDef> => parser.model.add_robot(r);
+//RobotBlock: () = "robot" "{" <l:RobotDef*> "}" => {
+//    for r in l {
+//        parser.model.add_robot(r);
+//    };
+//};
 
 //------------------------- Type Definition -------------------------
 
@@ -84,7 +84,7 @@ Function: () = "def" <x:Identifier> <p:Parameters> "{" <e:Expr> "}"=> {
 
 //------------------------- Declared Methods -------------------------
 
-DeclMethod: () = "decl" <x:Identifier> <p:Parameters> => {
+DeclMethod: () = "dec" <x:Identifier> <p:Parameters> => {
     let x = DeclMethod::new(x.name, p, Some(x.position));
     parser.model.add_declared_method(x);
 };
@@ -203,6 +203,10 @@ TermExpr: Expr = {
     },
     <x:Identifier> => Expr::new_unresolved(x.name, Some(x.position)),
     "(" <Expr> ")",
+    <x:Identifier>"."<y:Identifier> "(" ")" => {
+        let expression = Expression::UnresolvedSkillCall(x.name, y.name, vec![]);
+        Expr::new(expression, Some(x.position))
+    }
 };
 
 //========================= Lexer =========================

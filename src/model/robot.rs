@@ -25,11 +25,11 @@ pub struct Robot {
 }
 
 impl Robot {
-    pub fn new<S: Into<String>>(name: S, skillset_type: Type, position: Option<Position>) -> Self {
+    pub fn new<S: Into<String>>(name: S, skillset: SkillsetId, position: Option<Position>) -> Self {
         Self {
             id: RobotId::default(),
             name: name.into(),
-            skillset_type,
+            skillset,
             position,
         }
     }
@@ -38,11 +38,11 @@ impl Robot {
         &self.name
     }
 
-    pub fn skillset_type(&self) -> &Type {
-        &self.skillset_type
+    pub fn skillset(&self) -> &SkillsetId {
+        &self.skillset
     }
-    pub fn set_skillset_type(&mut self, id: SkillsetId) -> () {
-        self.skillset_type = Type::Skillset(id);
+    pub fn set_skillset_id(&mut self, id: SkillsetId) -> () {
+        self.skillset = id;
     }
 
     pub fn position(&self) -> Option<Position> {
@@ -77,7 +77,7 @@ impl std::fmt::Display for Robot {
 impl ToLang for Robot {
     fn to_lang(&self, model: &Model) -> String {
         let mut s = format!("robot {}:", self.name);
-        s += &format!("{}", self.skillset_type.to_lang(model));
+        // s += &format!("{}", model.rl_model.get_skillset(self.skillset));
         s += "\n";
         s
     }

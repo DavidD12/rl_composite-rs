@@ -1,4 +1,6 @@
 use super::*;
+use crate::model::Model;
+use rl_model::model::Named as RlNamed;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct FunctionId(pub usize);
@@ -50,6 +52,14 @@ impl Function {
 
     pub fn set_expr(&mut self, expr: Expr) {
         self.expr = expr
+    }
+
+    pub fn parameters_mut(&mut self) -> &mut Vec<Parameter> {
+        self.parameters.as_mut()
+    }
+
+    pub fn resolve_expr(&mut self, model: &Model) -> Result<(), RlcError> {
+        self.expr.resolve_expression(model)
     }
 }
 
