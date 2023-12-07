@@ -1,6 +1,7 @@
 use crate::parser::error::*;
 use rl_model::model::Model as RlModel;
 use rl_model::model::Named as RlNamed;
+use std::collections::HashSet;
 
 use super::*;
 #[derive(Debug, Clone)]
@@ -11,6 +12,7 @@ pub struct Model {
     types: Vec<RlcType>,
     functions: Vec<Function>,
     declared_methods: Vec<DeclMethod>,
+    ros_calls: HashSet<RosCall>,
 }
 
 impl Default for Model {
@@ -22,6 +24,7 @@ impl Default for Model {
             types: vec![],
             functions: vec![],
             declared_methods: vec![],
+            ros_calls: HashSet::new(),
         }
     }
 }
@@ -103,6 +106,16 @@ impl Model {
 
     pub fn get_declared_method(&self, id: DeclMethodId) -> Option<&DeclMethod> {
         self.declared_methods.get(id.index())
+    }
+
+    // ----- Ros Call -----
+
+    pub fn add_ros_call(&mut self, topic: String, typ: RosCallType) {
+        self.ros_calls.insert(RosCall::new(topic, typ));
+    }
+
+    pub fn ros_calls(&self) -> &HashSet<RosCall> {
+        &self.ros_calls
     }
 
     // ---------- ----------
@@ -237,30 +250,30 @@ impl Model {
         Ok(())
     }
 
-    fn resolve_robots(&mut self) -> Result<(), RlcError> {
-        // for r in self.robots.iter_mut() {
-        //     for s in self.rl_model.skillsets().iter() {
-        //         match r.skillset() {
-        //             (name, _pos) => {
-        //                 if *name == s.to_string() {
-        //                     r.set_skillset_type(RlNamed::id(s));
-        //                 }
-        //             }
-        //             _ => (),
-        //         }
-        //     }
-        //     match r.skillset_type() {
-        //         Type::Unresolved(name, pos) => {
-        //             return Err(RlcError::Resolve {
-        //                 element: format!("type '{}'", name),
-        //                 position: pos.clone(),
-        //             })
-        //         }
-        //         _ => (),
-        //     };
-        // }
-        Ok(())
-    }
+    // fn resolve_robots(&mut self) -> Result<(), RlcError> {
+    // for r in self.robots.iter_mut() {
+    //     for s in self.rl_model.skillsets().iter() {
+    //         match r.skillset() {
+    //             (name, _pos) => {
+    //                 if *name == s.to_string() {
+    //                     r.set_skillset_type(RlNamed::id(s));
+    //                 }
+    //             }
+    //             _ => (),
+    //         }
+    //     }
+    //     match r.skillset_type() {
+    //         Type::Unresolved(name, pos) => {
+    //             return Err(RlcError::Resolve {
+    //                 element: format!("type '{}'", name),
+    //                 position: pos.clone(),
+    //             })
+    //         }
+    //         _ => (),
+    //     };
+    // }
+    // Ok(())
+    // }
 }
 
 impl std::fmt::Display for Model {

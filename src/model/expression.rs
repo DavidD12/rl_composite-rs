@@ -1,4 +1,4 @@
-use rl_model::model::{skill, SkillId, SkillsetId};
+use rl_model::model::{SkillId, SkillsetId};
 
 use super::*;
 
@@ -59,9 +59,6 @@ pub enum Expression {
     Unresolved(String),
     UnresolvedFunctionCall(String, Vec<Expr>),
     UnresolvedSkillCall(String, String, Vec<Expr>),
-    UnresolvedRosPublish(String, Vec<Expr>),
-    UnresolvedRosService(String, Vec<Expr>),
-    UnresolvedRosAction(String, Vec<Expr>),
     //
     Nary(NaryOperator, Vec<Expr>),
     //
@@ -72,6 +69,7 @@ pub enum Expression {
     // RobotRef(RobotId, SkillsetId),
     FunctionCall(FunctionId, Vec<Expr>),
     SkillCall(SkillsetId, SkillId, Vec<Expr>),
+    RosCall(String, RosCallType, Vec<Expr>),
 }
 
 impl Expression {
@@ -85,9 +83,7 @@ impl Expression {
             Expression::FunctionCall(_, _) => todo!(),
             Expression::UnresolvedSkillCall(_, _, _) => todo!(),
             Expression::SkillCall(_, _, _) => todo!(),
-            Expression::UnresolvedRosPublish(_, _) => todo!(),
-            Expression::UnresolvedRosService(_, _) => todo!(),
-            Expression::UnresolvedRosAction(_, _) => todo!(),
+            Expression::RosCall(_, _, _) => todo!(),
         }
     }
 
@@ -101,9 +97,7 @@ impl Expression {
             Expression::FunctionCall(_, _) => todo!(),
             Expression::UnresolvedSkillCall(_, _, _) => todo!(),
             Expression::SkillCall(_, _, _) => todo!(),
-            Expression::UnresolvedRosPublish(_, _) => todo!(),
-            Expression::UnresolvedRosService(_, _) => todo!(),
-            Expression::UnresolvedRosAction(_, _) => todo!(),
+            Expression::RosCall(_, _, _) => todo!(),
         }
     }
 }
@@ -200,36 +194,14 @@ impl ToLang for Expression {
                 }
                 s + ")"
             }
-            Expression::UnresolvedRosPublish(topic, params) => {
-                let mut s = format!("ros.publish('{}',", topic);
-                if params.is_empty() {
-                    s += "std_msgs.Empty()";
-                } else {
-                    if let Some((first, others)) = params.split_first() {
-                        s += &first.to_lang(model);
-                        for x in others.iter() {
-                            s += &format!(", {}", x.to_lang(model));
-                        }
-                    }
+            Expression::RosCall(topic, typ, params) => {
+                let s_typ;
+                match typ {
+                    RosCallType::Publish => s_typ = "publish",
+                    RosCallType::Service => s_typ = "service",
+                    RosCallType::Action => s_typ = "action",
                 }
-                s + ")"
-            }
-            Expression::UnresolvedRosService(topic, params) => {
-                let mut s = format!("ros.service('{}',", topic);
-                if params.is_empty() {
-                    s += "std_srvs.Empty()";
-                } else {
-                    if let Some((first, others)) = params.split_first() {
-                        s += &first.to_lang(model);
-                        for x in others.iter() {
-                            s += &format!(", {}", x.to_lang(model));
-                        }
-                    }
-                }
-                s + ")"
-            }
-            Expression::UnresolvedRosAction(topic, params) => {
-                let mut s = format!("ros.action('{}',", topic);
+                let mut s = format!("ros.{}('{}',", s_typ, topic);
                 if params.is_empty() {
                     s += "std_msgs.Empty()";
                 } else {

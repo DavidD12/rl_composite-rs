@@ -1,6 +1,5 @@
 use super::*;
 use crate::model::Model;
-use rl_model::model::Named as RlNamed;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct FunctionId(pub usize);

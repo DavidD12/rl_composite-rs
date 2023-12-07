@@ -228,17 +228,17 @@ TermExpr: Expr = {
 
     // ROS API
     "ros.publish(" <topic:String> <v:("," <Expr>)*> ")" => {
-        let expression = Expression::UnresolvedRosPublish(topic, v);
+        let expression = Expression::RosCall(topic,RosCallType::Publish, v);
         let position = Some(Position::new(parser.file(), lookup, 0));
         Expr::new(expression, position)
     },
     "ros.service(" <topic:String> <v:("," <Expr>)*> ")" => {
-        let expression = Expression::UnresolvedRosService(topic, v);
+        let expression = Expression::RosCall(topic,RosCallType::Service, v);
         let position = Some(Position::new(parser.file(), lookup, 0));
         Expr::new(expression, position)
     },
     "ros.action(" <topic:String> <v:("," <Expr>)*> ")" => {
-        let expression = Expression::UnresolvedRosAction(topic, v);
+        let expression = Expression::RosCall(topic,RosCallType::Action, v);
         let position = Some(Position::new(parser.file(), lookup, 0));
         Expr::new(expression, position)
     },

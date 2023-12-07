@@ -43,18 +43,11 @@ impl Expr {
         for func in model.functions().iter() {
             if name == func.name() {
                 print!("  - found match with {}\n", func.name());
-                self.expression = Expression::FunctionCall(func.id(), params.to_vec());
-                // TODO: params check
-                // for p1 in params.iter_mut() {
-                //     for p2 in func.parameters().iter() {
-                //         if p1 != p2 {
-                //             return Err(RlcError::Resolve {
-                //                 element: format!("type '{}'", name),
-                //                 position: pos.clone(),
-                //             });
-                //         }
-                //     }
-                // }
+                let mut resolved_params: Vec<Expr> = params.clone();
+                for p in resolved_params.iter_mut() {
+                    p.resolve_expression(model)?;
+                }
+                self.expression = Expression::FunctionCall(func.id(), resolved_params);
             }
         }
         match self.expression.clone() {
@@ -86,8 +79,12 @@ impl Expr {
                     let target_skillset = RlNamed::id(set);
                     let target_skill: rl_model::model::SkillId = RlNamed::id(s);
                     if skill == s.name() {
+                        let mut resolved_params: Vec<Expr> = params.clone();
+                        for p in resolved_params.iter_mut() {
+                            p.resolve_expression(model)?;
+                        }
                         self.expression =
-                            Expression::SkillCall(target_skillset, target_skill, params.clone());
+                            Expression::SkillCall(target_skillset, target_skill, resolved_params);
                     }
                 }
                 match self.expression.clone() {
@@ -148,6 +145,13 @@ impl Expr {
             }
             Expression::UnresolvedSkillCall(skillset, skill, params) => {
                 self.res_skill_call(model, skillset, skill, params)?;
+            }
+            Expression::RosCall(topic, typ, params) => {
+                let mut resolved_params: Vec<Expr> = params.clone();
+                for p in resolved_params.iter_mut() {
+                    p.resolve_expression(model)?;
+                }
+                self.expression = Expression::RosCall(topic, typ, resolved_params);
             }
             _ => (),
         }

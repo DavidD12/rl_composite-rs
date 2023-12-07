@@ -75,8 +75,8 @@ impl std::fmt::Display for Robot {
 }
 
 impl ToLang for Robot {
-    fn to_lang(&self, model: &Model) -> String {
-        let mut s = format!("robot {}:", self.name);
+    fn to_lang(&self, _model: &Model) -> String {
+        let mut s: String = format!("robot {}:", self.name);
         // s += &format!("{}", model.rl_model.get_skillset(self.skillset));
         s += "\n";
         s

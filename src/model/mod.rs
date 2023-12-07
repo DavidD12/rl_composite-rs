@@ -13,6 +13,9 @@ pub use decl_method::*;
 pub mod parameter;
 pub use parameter::*;
 
+pub mod ros_call;
+pub use ros_call::*;
+
 pub mod rlc_type;
 pub use rlc_type::*;
 
