@@ -195,14 +195,26 @@ SequenceExpr: Expr = {
 // PrefixExpr: Expr = {
 
 // };
-
+// <l:@L><e:ParallelExpr> <v: ("!" <ParallelExpr>)+>
 TermExpr: Expr = {
+    <x:Identifier> "(" <e:Expr> <v:("," <Expr>)*> ")" => {
+        let mut kids = vec![e];
+        kids.extend(v);
+        let expression = Expression::UnresolvedFunctionCall(x.name, kids);
+        Expr::new(expression, Some(x.position))
+    },
     <x:Identifier> "(" ")" => {
         let expression = Expression::UnresolvedFunctionCall(x.name, vec![]);
         Expr::new(expression, Some(x.position))
     },
     <x:Identifier> => Expr::new_unresolved(x.name, Some(x.position)),
     "(" <Expr> ")",
+    <x:Identifier>"."<y:Identifier> "(" <e:Expr> <v:("," <Expr>)*> ")" => {
+        let mut kids = vec![e];
+        kids.extend(v);
+        let expression = Expression::UnresolvedSkillCall(x.name, y.name, kids);
+        Expr::new(expression, Some(x.position))
+    },
     <x:Identifier>"."<y:Identifier> "(" ")" => {
         let expression = Expression::UnresolvedSkillCall(x.name, y.name, vec![]);
         Expr::new(expression, Some(x.position))

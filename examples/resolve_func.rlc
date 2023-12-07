@@ -1,0 +1,6 @@
+
+include "examples/spot.rl"
+
+def my_function(spot:spot, data1: GeoPoint, data2: GeoPoint) {
+    spot.go_to_waypoint(data1, data2)
+}

@@ -33,82 +33,125 @@ impl Expr {
         }
     }
 
-    pub fn resolve_expression(&mut self, model: &Model) -> Result<(), RlcError> {
+    fn res_function_call(
+        &mut self,
+        model: &Model,
+        name: String,
+        params: Vec<Expr>,
+    ) -> Result<(), RlcError> {
+        print!("  - resolv fn call\n");
+        for func in model.functions().iter() {
+            if name == func.name() {
+                print!("  - found match with {}\n", func.name());
+                self.expression = Expression::FunctionCall(func.id(), params.to_vec());
+                // TODO: params check
+                // for p1 in params.iter_mut() {
+                //     for p2 in func.parameters().iter() {
+                //         if p1 != p2 {
+                //             return Err(RlcError::Resolve {
+                //                 element: format!("type '{}'", name),
+                //                 position: pos.clone(),
+                //             });
+                //         }
+                //     }
+                // }
+            }
+        }
         match self.expression.clone() {
-            Expression::Unresolved(_) => {
-                print!("resolving: {}", self.expression.to_lang(model))
+            Expression::UnresolvedFunctionCall(name, _params) => {
+                return Err(RlcError::Resolve {
+                    element: format!("function '{}'", name),
+                    position: self.position.clone(),
+                });
             }
-            Expression::UnresolvedFunctionCall(name, params) => {
-                print!("  - resolv fn call\n");
-                for func in model.functions().iter() {
-                    if name == func.name() {
-                        print!("  - found match with {}\n", func.name());
-                        self.expression = Expression::FunctionCall(func.id(), params.to_vec());
-                        // TODO: params check
-                        // for p1 in params.iter_mut() {
-                        //     for p2 in func.parameters().iter() {
-                        //         if p1 != p2 {
-                        //             return Err(RlcError::Resolve {
-                        //                 element: format!("type '{}'", name),
-                        //                 position: pos.clone(),
-                        //             });
-                        //         }
-                        //     }
-                        // }
+            _ => (),
+        }
+        Ok(())
+    }
+
+    fn res_skill_call(
+        &mut self,
+        model: &Model,
+        skillset: String,
+        skill: String,
+        params: Vec<Expr>,
+    ) -> Result<(), RlcError> {
+        print!("  - resolv skill call\n");
+        // FALSE FOR NOW
+        // Should compare with parent function parameters, not skillset names
+        for set in model.rl_model.skillsets().iter() {
+            if skillset == set.to_string() {
+                print!(" -- found matching skillset {}\n", set.to_string());
+                for s in set.skills().iter() {
+                    let target_skillset = RlNamed::id(set);
+                    let target_skill: rl_model::model::SkillId = RlNamed::id(s);
+                    if skill == s.name() {
+                        self.expression =
+                            Expression::SkillCall(target_skillset, target_skill, params.clone());
                     }
                 }
                 match self.expression.clone() {
-                    Expression::UnresolvedFunctionCall(name, _params) => {
+                    Expression::UnresolvedSkillCall(skillset, skill, _params) => {
                         return Err(RlcError::Resolve {
-                            element: format!("function '{}'", name),
+                            element: format!(
+                                "skill '{}' not part of skillset '{}'",
+                                skill, skillset
+                            ),
                             position: self.position.clone(),
                         });
                     }
                     _ => (),
                 }
             }
-            Expression::UnresolvedSkillCall(skillset, skill, params) => {
-                print!("  - resolv skill call\n");
-                // FALSE FOR NOW
-                // Should compare with parent function parameters, not skillset names
-                for set in model.rl_model.skillsets().iter() {
-                    if skillset == set.to_string() {
-                        print!(" -- found matching skillset {}", set.to_string());
-                        for s in set.skills().iter() {
-                            if skill == s.name() {
-                                self.expression = Expression::SkillCall(
-                                    RlNamed::id(set),
-                                    RlNamed::id(s),
-                                    params.clone(),
-                                );
-                            }
-                        }
-                        match self.expression.clone() {
-                            Expression::UnresolvedSkillCall(skillset, skill, _params) => {
-                                return Err(RlcError::Resolve {
-                                    element: format!(
-                                        "skill '{}' not part of skillset '{}'",
-                                        skill, skillset
-                                    ),
-                                    position: self.position.clone(),
-                                });
-                            }
-                            _ => (),
-                        }
-                    }
+        }
+        match self.expression.clone() {
+            Expression::UnresolvedSkillCall(skillset, _skill, _params) => {
+                return Err(RlcError::Resolve {
+                    element: format!("skillset '{}'", skillset),
+                    position: self.position.clone(),
+                });
+            }
+            _ => (),
+        }
+        Ok(())
+    }
+
+    fn res_parameters(&mut self, model: &Model) -> Result<(), RlcError> {
+        match self.expression.clone() {
+            Expression::SkillCall(set_id, skill_id, params) => {
+                // first resolve parameters expressions
+                let mut resolved_params = params.clone();
+                for p in resolved_params.iter_mut() {
+                    p.resolve_expression(model)?;
                 }
-                match self.expression.clone() {
-                    Expression::UnresolvedSkillCall(skillset, _skill, _params) => {
-                        return Err(RlcError::Resolve {
-                            element: format!("skillset '{}'", skillset),
-                            position: self.position.clone(),
-                        });
-                    }
-                    _ => (),
+                let set = model.rl_model.get_skillset(set_id).expect("ERROR");
+                let skill = set.get_skill(skill_id).expect("ERROR");
+                for (i, input) in skill.inputs().iter().enumerate() {
+                    print!("  -- input {}: {}\n", i.to_string(), input.name());
+                    print!("  --- {}\n", params[i].expression().to_lang(model))
                 }
             }
             _ => (),
         }
+        Ok(())
+    }
+
+    pub fn resolve_expression(&mut self, model: &Model) -> Result<(), RlcError> {
+        match self.expression.clone() {
+            Expression::Unresolved(_) => {
+                print!("resolving: {}\n", self.expression.to_lang(model))
+                // is parent function parameter ?
+                // is declared parameter ?
+            }
+            Expression::UnresolvedFunctionCall(name, params) => {
+                self.res_function_call(model, name, params)?;
+            }
+            Expression::UnresolvedSkillCall(skillset, skill, params) => {
+                self.res_skill_call(model, skillset, skill, params)?;
+            }
+            _ => (),
+        }
+        self.res_parameters(model)?;
         Ok(())
     }
 }
