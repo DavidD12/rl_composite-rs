@@ -59,6 +59,9 @@ pub enum Expression {
     Unresolved(String),
     UnresolvedFunctionCall(String, Vec<Expr>),
     UnresolvedSkillCall(String, String, Vec<Expr>),
+    UnresolvedRosPublish(String, Vec<Expr>),
+    UnresolvedRosService(String, Vec<Expr>),
+    UnresolvedRosAction(String, Vec<Expr>),
     //
     Nary(NaryOperator, Vec<Expr>),
     //
@@ -82,6 +85,9 @@ impl Expression {
             Expression::FunctionCall(_, _) => todo!(),
             Expression::UnresolvedSkillCall(_, _, _) => todo!(),
             Expression::SkillCall(_, _, _) => todo!(),
+            Expression::UnresolvedRosPublish(_, _) => todo!(),
+            Expression::UnresolvedRosService(_, _) => todo!(),
+            Expression::UnresolvedRosAction(_, _) => todo!(),
         }
     }
 
@@ -95,6 +101,9 @@ impl Expression {
             Expression::FunctionCall(_, _) => todo!(),
             Expression::UnresolvedSkillCall(_, _, _) => todo!(),
             Expression::SkillCall(_, _, _) => todo!(),
+            Expression::UnresolvedRosPublish(_, _) => todo!(),
+            Expression::UnresolvedRosService(_, _) => todo!(),
+            Expression::UnresolvedRosAction(_, _) => todo!(),
         }
     }
 }
@@ -187,6 +196,48 @@ impl ToLang for Expression {
                     s += &first.to_lang(model);
                     for x in others.iter() {
                         s += &format!(", {}", x.to_lang(model));
+                    }
+                }
+                s + ")"
+            }
+            Expression::UnresolvedRosPublish(topic, params) => {
+                let mut s = format!("ros.publish('{}',", topic);
+                if params.is_empty() {
+                    s += "std_msgs.Empty()";
+                } else {
+                    if let Some((first, others)) = params.split_first() {
+                        s += &first.to_lang(model);
+                        for x in others.iter() {
+                            s += &format!(", {}", x.to_lang(model));
+                        }
+                    }
+                }
+                s + ")"
+            }
+            Expression::UnresolvedRosService(topic, params) => {
+                let mut s = format!("ros.service('{}',", topic);
+                if params.is_empty() {
+                    s += "std_srvs.Empty()";
+                } else {
+                    if let Some((first, others)) = params.split_first() {
+                        s += &first.to_lang(model);
+                        for x in others.iter() {
+                            s += &format!(", {}", x.to_lang(model));
+                        }
+                    }
+                }
+                s + ")"
+            }
+            Expression::UnresolvedRosAction(topic, params) => {
+                let mut s = format!("ros.action('{}',", topic);
+                if params.is_empty() {
+                    s += "std_msgs.Empty()";
+                } else {
+                    if let Some((first, others)) = params.split_first() {
+                        s += &first.to_lang(model);
+                        for x in others.iter() {
+                            s += &format!(", {}", x.to_lang(model));
+                        }
                     }
                 }
                 s + ")"

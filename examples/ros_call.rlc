@@ -1,0 +1,14 @@
+
+type { Data Request }
+
+def ros_publish(data: Data) {
+    ros.publish("/topic")
+}
+
+def ros_service(req: Request) {
+    ros.service("/service",req)
+}
+
+def ros_action(req: Request) {
+    ros.action("/action",req)
+}

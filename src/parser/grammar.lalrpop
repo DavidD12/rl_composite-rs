@@ -197,6 +197,8 @@ SequenceExpr: Expr = {
 // };
 // <l:@L><e:ParallelExpr> <v: ("!" <ParallelExpr>)+>
 TermExpr: Expr = {
+
+    // Function call
     <x:Identifier> "(" <e:Expr> <v:("," <Expr>)*> ")" => {
         let mut kids = vec![e];
         kids.extend(v);
@@ -209,6 +211,10 @@ TermExpr: Expr = {
     },
     <x:Identifier> => Expr::new_unresolved(x.name, Some(x.position)),
     "(" <Expr> ")",
+
+    // Decl Method call
+
+    // Skill call
     <x:Identifier>"."<y:Identifier> "(" <e:Expr> <v:("," <Expr>)*> ")" => {
         let mut kids = vec![e];
         kids.extend(v);
@@ -218,7 +224,24 @@ TermExpr: Expr = {
     <x:Identifier>"."<y:Identifier> "(" ")" => {
         let expression = Expression::UnresolvedSkillCall(x.name, y.name, vec![]);
         Expr::new(expression, Some(x.position))
-    }
+    },
+
+    // ROS API
+    "ros.publish(" <topic:String> <v:("," <Expr>)*> ")" => {
+        let expression = Expression::UnresolvedRosPublish(topic, v);
+        let position = Some(Position::new(parser.file(), lookup, 0));
+        Expr::new(expression, position)
+    },
+    "ros.service(" <topic:String> <v:("," <Expr>)*> ")" => {
+        let expression = Expression::UnresolvedRosService(topic, v);
+        let position = Some(Position::new(parser.file(), lookup, 0));
+        Expr::new(expression, position)
+    },
+    "ros.action(" <topic:String> <v:("," <Expr>)*> ")" => {
+        let expression = Expression::UnresolvedRosAction(topic, v);
+        let position = Some(Position::new(parser.file(), lookup, 0));
+        Expr::new(expression, position)
+    },
 };
 
 //========================= Lexer =========================
